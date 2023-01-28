@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class WhatsappRepository {
-
     //Assume that each user belongs to at most one group
     //You can use the below mentioned hashmaps or delete these and create your own.
     private HashMap<Group, List<User>> groupUserMap;
@@ -17,8 +16,7 @@ public class WhatsappRepository {
     private int customGroupCount;
     private int messageId;
 
-
-    public WhatsappRepository() {
+    public WhatsappRepository(){
         this.groupMessageMap = new HashMap<Group, List<Message>>();
         this.groupUserMap = new HashMap<Group, List<User>>();
         this.senderMap = new HashMap<Message, User>();
@@ -33,12 +31,20 @@ public class WhatsappRepository {
         return true;
     }
 
-    public  String createUser(String name, String mobile) throws  Exception{
+    public void createUser(String name, String mobile) {
         userData.put(mobile, new User(name, mobile));
-        return "success";
     }
 
-    public  Group createGroup(List<User> users) {
+    public String changeAdmin(User approver, User user, Group group) throws Exception{
+        if(!groupUserMap.containsKey(group)) throw new Exception("Group does not exist");
+        if(!adminMap.get(group).equals(approver)) throw new Exception("Approver does not have rights");
+        if(!this.userExistsInGroup(group, user)) throw  new Exception("User is not a participant");
+
+        adminMap.put(group, user);
+        return "SUCCESS";
+    }
+
+    public Group createGroup(List<User> users) {
         if(users.size() == 2) return this.createPersonalChat(users);
 
         this.customGroupCount++;
@@ -56,13 +62,13 @@ public class WhatsappRepository {
         return personalGroup;
     }
 
-    public  int createMessage(String content) {
+    public int createMessage(String content){
         this.messageId++;
         Message message = new Message(messageId, content, new Date());
         return this.messageId;
     }
 
-    public  int sendMessage(Message message, User sender, Group group) throws Exception{
+    public int sendMessage(Message message, User sender, Group group) throws Exception{
         if(!groupUserMap.containsKey(group)) throw new Exception("Group does not exist");
         if(!this.userExistsInGroup(group, sender)) throw  new Exception("You are not allowed to send message");
 
@@ -74,16 +80,6 @@ public class WhatsappRepository {
         return messages.size();
     }
 
-
-    public  String chageAdmin(User approver, User user, Group group) throws Exception{
-        if(!groupUserMap.containsKey(group)) throw new Exception("invalid Group ");
-        if(!adminMap.get(group).equals(approver)) throw new Exception("Invalid rights ");
-        if(!this.userExistsInGroup(group, user)) throw  new Exception("User did't participate");
-
-        adminMap.put(group, user);
-        return "SUCCESS";
-    }
-
     public boolean userExistsInGroup(Group group, User sender) {
         List<User> users = groupUserMap.get(group);
         for(User user: users) {
@@ -92,11 +88,6 @@ public class WhatsappRepository {
 
         return false;
     }
-    public  int removeUser(User user) {
-        return 0;
-    }
 
-    public  String findMessage(Date start, Date end, int k) {
-        return "";
-    }
+
 }

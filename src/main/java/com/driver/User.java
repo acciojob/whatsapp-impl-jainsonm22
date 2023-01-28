@@ -6,8 +6,9 @@ public class User {
     private String name;
     private String mobile;
 
-
+    static HashSet < String > set ;
     public User(String name, String mobile) {
+        new HashSet<>() ;
         this.name = name;
         this.mobile = mobile;
     }
